@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>덧셈 뺄셈 천국, 요정나라!</title>
+  <style>
+    /* 폰트: 옹글잎 콘콘 (손글씨 느낌) */
+    @font-face {
+      font-family: 'OngleipKonkon';
+      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2412-1@1.0/Ownglyph_corncorn-Rg.woff2') format('woff2');
+      font-weight: normal;
+      font-display: swap;
+    }
+    /* 폰트: 메이플스토리 (제목 및 강조용) */
+    @font-face {
+      font-family: 'MaplestoryOTFBold';
+      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/MaplestoryOTFBold.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    
+    body {
+      font-family: 'OngleipKonkon', sans-serif;
+      background: #e0f7fa; /* 하늘색 요정나라 배경 */
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      overflow: hidden;
+      user-select: none;
+    }
+    
+    .container {
+      background: rgba(255,255,255,0.98);
+      border-radius: 20px;
+      padding: 15px;
+      max-width: 950px;
+      width: 100%;
+      height: 95vh;
+      position: relative;
+      border: 8px solid #00acc1; /* 테두리 */
+      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* === 1. 공통 UI === */
+    /* 상단 버튼 그룹 */
+    .top-left-btn { position: absolute; top: 15px; left: 20px; z-index: 20; }
+    .top-right-btn { position: absolute; top: 15px; right: 20px; z-index: 20; }
+
+    .header-btn {
+        background: #26c6da; color: #fff; border: none; padding: 8px 15px;
+        border-radius: 10px; font-size: 1.1em; cursor: pointer; border-bottom: 3px solid #0097a7;
+        font-family: 'OngleipKonkon'; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .header-btn:hover { background: #00bcd4; transform: translateY(2px); border-bottom-width: 1px; }
+
+    h1 {
+      font-family: 'MaplestoryOTFBold', sans-serif;
+      color: #00838f;
+      margin: 10px 0 10px 0;
+      font-size: 2.0em;
+      text-align: center;
+      text-shadow: 2px 2px 0px #b2ebf2;
+      display: flex; align-items: center; gap: 15px; justify-content: center;
+      width: 100%; pointer-events: none;
+    }
+    .title-icon { height: 1.5em; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.1)); }
+
+    .btn {
+      background: #ff7043;
+      color: #fff;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 15px;
+      font-size: 1.5em;
+      cursor: pointer;
+      border-bottom: 5px solid #d84315;
+      transition: 0.2s;
+      font-family: 'OngleipKonkon', sans-serif;
+    }
+    .btn:active { transform: translateY(3px); border-bottom-width: 2px; }
+    .btn:hover { filter: brightness(1.1); }
+    .btn-green { background: #66bb6a; border-bottom-color: #388e3c; }
+    .btn-blue { background: #42a5f5; border-bottom-color: #1976d2; }
+    .btn-home { background: #5d4037; border-bottom-color: #3e2723; }
+    .btn-gray { background: #90a4ae; border-bottom-color: #546e7a; }
+
+    /* 화면 전환 클래스 */
+    .screen { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; }
+    .screen.active { display: flex; }
+
+    /* === 2. 인트로 (동화책) === */
+    #intro-screen { justify-content: center; }
+    .story-book {
+      width: 90%; height: 80%; background: #fff;
+      border: 4px solid #8d6e63; border-radius: 15px; padding: 30px;
+      box-shadow: 10px 10px 20px rgba(0,0,0,0.2);
+      display: flex; flex-direction: column; align-items: center; position: relative;
+      background-image: linear-gradient(to right, #fafafa 0%, #fff 5%, #fff 95%, #eee 100%);
+    }
+    .book-spine { position: absolute; left: 15px; top: 0; bottom: 0; width: 5px; background: #eee; border-right: 1px solid #ccc; }
+    
+    .story-page { 
+        display: none; width: 100%; height: 100%; animation: fadeIn 0.5s; 
+        flex-direction: row; align-items: center; gap: 30px;
+    }
+    .story-page.active { display: flex; }
+    
+    .story-img-area {
+      flex: 1.2; height: 90%; background: #fff; border-radius: 15px; border: 3px solid #8d6e63;
+      display: flex; justify-content: center; align-items: center; overflow: hidden;
+      box-shadow: 5px 5px 10px rgba(0,0,0,0.1);
+    }
+    .story-img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .story-content { flex: 1; height: 90%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .story-text {
+      font-size: 1.35em; line-height: 1.5; color: #37474f; 
+      text-align: left; word-break: keep-all; margin-bottom: 20px;
+      background: rgba(255,255,255,0.6); padding: 20px; border-radius: 10px;
+      border: 2px dashed #b0bec5; width: 100%; max-height: 70%; overflow-y: auto;
+    }
+    .story-nav { display: flex; gap: 15px; width: 100%; justify-content: center; }
+
+    @keyframes fadeIn { from { opacity:0; transform: translateX(10px); } to { opacity:1; transform: translateX(0); } }
+
+    /* === 3. 로그인 (4인용 드롭박스 + 로비 꾸미기) === */
+    .login-container { display: flex; flex-direction: column; width: 100%; height: 100%; position: relative; }
+    
+    .login-grid {
+      display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+      gap: 15px; width: 100%; flex: 1; margin-bottom: 10px; z-index: 2;
+    }
+    .player-setup-box {
+      background: rgba(255,255,255,0.95); border: 3px solid #b0bec5; border-radius: 15px;
+      padding: 10px 15px; display: flex; flex-direction: column; gap: 8px; position: relative;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .player-label { font-weight: bold; color: #00838f; font-size: 1.1em; display: flex; justify-content: space-between; align-items: center; }
+    .setup-row { display: flex; gap: 5px; }
+    .styled-select {
+        flex: 1; padding: 5px; font-size: 1.0em; border: 2px solid #81d4fa; border-radius: 8px;
+        font-family: 'OngleipKonkon'; cursor: pointer;
+    }
+    .char-preview-btn {
+        width: 100%; padding: 8px; background: #e0f7fa; border: 2px dashed #00acc1; border-radius: 8px;
+        color: #006064; cursor: pointer; font-size: 1.0em; display: flex; align-items: center; justify-content: center; gap: 10px; flex: 1;
+    }
+    .char-preview-btn:hover { background: #b2ebf2; }
+    .char-thumb-small { width: 35px; height: 35px; object-fit: contain; }
+
+    .lobby-footer {
+        height: 250px; width: 100%; display: flex; align-items: flex-end; justify-content: center;
+        position: relative; margin-top: -30px;
+    }
+    .lobby-char-left, .lobby-char-right {
+        position: absolute; bottom: 10px; display: flex; gap: 20px; pointer-events: none; z-index: 1;
+    }
+    .lobby-char-left { left: 10px; }
+    .lobby-char-right { right: 10px; }
+    
+    .lobby-char-img { 
+        height: 230px; width: auto; filter: drop-shadow(3px 3px 5px rgba(0,0,0,0.2)); transition: transform 0.3s;
+    }
+    .lobby-char-img:hover { transform: scale(1.1) translateY(-10px); }
+    
+    .start-btn-area { z-index: 10; margin-bottom: 30px; display: flex; flex-direction: column; align-items: center; }
+
+    /* === 4. 게임 화면 === */
+    #game-screen { position: relative; justify-content: center; }
+    
+    .player-box {
+        position: absolute; background: #fff; padding: 10px; border-radius: 15px; border: 4px solid #cfd8dc;
+        width: 200px; min-height: 170px; display: flex; flex-direction: column; justify-content: space-between;
+        z-index: 5; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: 0.3s;
+    }
+    .player-box.active {
+        border-color: #ff7043; background: #fff3e0; transform: scale(1.05); z-index: 10;
+        box-shadow: 0 0 25px rgba(255, 112, 67, 0.5);
+    }
+    .player-box.timeout { filter: grayscale(1); opacity: 0.6; }
+    
+    #p1-box { top: 0; left: 0; }
+    #p2-box { bottom: 0; left: 0; }
+    #p3-box { bottom: 0; right: 0; }
+    #p4-box { top: 0; right: 0; }
+    #p3-box .p-char-img img, #p4-box .p-char-img img { transform: scaleX(-1); }
+
+    .p-info { display: flex; justify-content: space-between; font-size: 1.0em; color: #546e7a; margin-bottom: 5px; }
+    .p-name { font-size: 1.2em; font-weight: bold; color: #37474f; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 120px;}
+    
+    .p-char-img { width: 120px; height: 110px; align-self: center; display: flex; justify-content: center; align-items: center; margin: 5px 0; }
+    .p-char-img img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.1)); }
+
+    .problem-area {
+        background: #fff; padding: 25px; border-radius: 30px; border: 5px solid #00acc1; width: 450px;
+        display: flex; flex-direction: column; align-items: center; box-shadow: 0 15px 30px rgba(0,0,0,0.15); z-index: 2;
+    }
+    .problem-text { font-size: 3.5em; font-weight: bold; color: #006064; margin: 10px 0; font-family: 'MaplestoryOTFBold'; }
+    #answerInput {
+        width: 150px; height: 65px; font-size: 2.4em; text-align: center;
+        border: 4px solid #ff7043; border-radius: 15px; background: #fff8e1; outline: none; color: #333; font-family: 'MaplestoryOTFBold';
+    }
+    .feedback { height: 35px; font-size: 1.3em; font-weight: bold; margin: 8px; white-space: nowrap; }
+
+    .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; width: 100%; max-width: 300px; }
+    .num-btn {
+        background: #f5f5f5; border: 2px solid #cfd8dc; border-radius: 12px; font-size: 1.6em; padding: 10px; cursor: pointer; color: #455a64;
+        font-family: 'MaplestoryOTFBold'; transition: 0.1s;
+    }
+    .num-btn.submit { background: #ff7043; color: white; border-color: #d84315; }
+    .num-btn.clear { background: #ffcc80; border-color: #ffa726; }
+    .num-btn:active { background: #cfd8dc; }
+
+    #turn-indicator {
+        position: absolute; width: 60px; height: 60px; top: 50%; left: 50%;
+        transform: translate(-50%, -50%); z-index: 20; pointer-events: none; transition: top 0.5s, left 0.5s;
+    }
+    #turn-indicator img { width: 100%; filter: drop-shadow(4px 4px 4px rgba(0,0,0,0.3)); animation: float 1s infinite alternate; }
+    @keyframes float { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+
+    /* === 5. 결과 화면 (그래프) === */
+    #result-screen { justify-content: flex-start; padding-top: 20px; }
+    .chart-container {
+        width: 90%; height: 350px; background: #fff; border: 3px solid #b0bec5; border-radius: 15px;
+        margin: 20px 0; padding: 20px 40px; display: flex; align-items: flex-end; justify-content: space-around; position: relative;
+    }
+    .chart-bar-group { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 15%; position: relative; }
+    .bar {
+        width: 100%; background: #e0e0e0; border-radius: 10px 10px 0 0;
+        transition: height 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative; display: flex; justify-content: center;
+    }
+    .bar.class-1 { background: #ef5350; }
+    .bar.class-2 { background: #ffa726; }
+    .bar.class-3 { background: #66bb6a; }
+    .bar.class-4 { background: #42a5f5; }
+    
+    .score-label { position: absolute; top: -30px; font-weight: bold; font-size: 1.2em; color: #37474f; }
+    .class-label { margin-top: 10px; font-weight: bold; font-size: 1.3em; color: #546e7a; }
+    
+    .my-contribution {
+        position: absolute; width: 100%; bottom: 0; left: 0; background: rgba(255,255,255,0.5);
+        border-top: 2px dashed rgba(255,255,255,0.8); animation: pulse 2s infinite;
+    }
+
+    /* === 모달 === */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 100; }
+    .modal-content { background: #e0f7fa; padding: 20px; border-radius: 15px; width: 650px; border: 5px solid #006064; text-align: center; max-height: 90vh; overflow-y: auto;}
+    
+    .char-grid { display: flex; gap: 20px; justify-content: center; margin-top: 20px; }
+    .char-card {
+        background: #fff; border: 3px solid #b0bec5; border-radius: 15px; padding: 15px; width: 180px;
+        cursor: pointer; transition: 0.2s;
+    }
+    .char-card:hover { transform: scale(1.05); border-color: #ff7043; background: #fff3e0; }
+    .char-card img { width: 140px; height: 140px; object-fit: contain; }
+    .char-name { display: block; margin-top: 10px; font-weight: bold; color: #37474f; font-size: 1.3em; }
+
+    .char-detail-view { display: none; flex-direction: column; align-items: center; }
+    .char-detail-row { display: flex; gap: 20px; text-align: left; align-items: flex-start; margin: 20px 0; width: 100%;}
+    .char-detail-img { width: 220px; height: 240px; object-fit: contain; background: #fff; border-radius: 15px; border: 3px solid #b0bec5; }
+    .char-desc-box { flex: 1; background: #fff; padding: 20px; border-radius: 10px; border: 2px solid #81d4fa; font-size: 1.3em; line-height: 1.6; color: #37474f; }
+    
+    .hof-table { width:100%; border-collapse:collapse; margin-top:10px; background: white; }
+    .hof-table th { border-bottom:2px solid #006064; padding:10px; color:#006064; background:#b2ebf2;}
+    .hof-table td { border-bottom:1px solid #ddd; padding:10px; }
+
+    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 0.8; } 100% { opacity: 0.5; } }
+  </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="top-left-btn">
+        <button class="header-btn" onclick="openHelpModal()">📖 게임 설명</button>
+    </div>
+    <div class="top-right-btn">
+        <button class="header-btn" onclick="openHofModal()">🔮 웃음 구슬 창고</button>
+    </div>
+
+    <h1>
+        <img src="https://i.imgur.com/NzaVyBQ.png" class="title-icon" alt="영희">
+        덧셈 뺄셈 천국, 요정나라!
+        <img src="https://i.imgur.com/NzaVyBQ.png" class="title-icon" style="transform:scaleX(-1)" alt="영희">
+    </h1>
+
+    <!-- 1. 인트로 -->
+    <div id="intro-screen" class="screen active">
+        <div class="story-book">
+            <div class="book-spine"></div>
+            
+            <div class="story-page active" id="page-1">
+                <div class="story-img-area">
+                    <img src="https://i.imgur.com/DF1BEaQ.jpeg" class="story-img" alt="삽화1">
+                </div>
+                <div class="story-content">
+                    <div class="story-text">
+                        학교를 마치고 집에 가던 <b>영희</b>는<br>
+                        신기한 골목길에서 반짝이는 구슬을 주우려다<br>
+                        갑자기 생긴 <b>구멍 속으로 쑥~</b> 떨어졌어요.
+                    </div>
+                    <div class="story-nav">
+                        <button class="btn btn-green" onclick="nextPage(2)">다음장 &gt;</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="story-page" id="page-2">
+                <div class="story-img-area">
+                    <img src="https://i.imgur.com/AgtL0Xy.jpeg" class="story-img" alt="삽화2">
+                </div>
+                <div class="story-content">
+                    <div class="story-text">
+                        눈을 떠보니... 우와!<br>
+                        과일과 숫자가 둥둥 떠다니는 <b>요정나라</b>였어요!<br><br>
+                        <b>"안녕? 우린 덧셈 뺄셈 요정이야!"</b><br>
+                        상큼한 <b>리오넬</b>과 새콤한 <b>레모</b>가 다가왔어요.
+                    </div>
+                    <div class="story-nav">
+                        <button class="btn btn-blue" onclick="nextPage(1)">&lt; 이전장</button>
+                        <button class="btn btn-green" onclick="nextPage(3)">다음장 &gt;</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="story-page" id="page-3">
+                <div class="story-img-area">
+                    <img src="https://i.imgur.com/60PHbJK.jpeg" class="story-img" alt="삽화3">
+                </div>
+                <div class="story-content">
+                    <div class="story-text">
+                        <b>"집으로 돌아가고 싶니? 그럼 '웃음 구슬'이 필요해!"</b><br><br>
+                        요정들은 수학 문제를 풀면 기분이 좋아져서<br>
+                        <b>'웃음 구슬'</b>을 선물로 준대요.<br>
+                        영희가 무사히 집으로 돌아갈 수 있게 도와주세요!<br>
+                        <b>자, 요정나라로 출발!</b>
+                    </div>
+                    <div class="story-nav">
+                        <button class="btn btn-blue" onclick="nextPage(2)">&lt; 이전장</button>
+                        <button class="btn" onclick="goToLogin()">다 읽었어요! (시작)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 로그인 -->
+    <div id="setup-screen" class="screen">
+        <div style="width:100%; text-align:center; margin-bottom:5px; color:#00838f;">
+            친구들의 <b>반</b>과 <b>이름</b>을 선택하고 <b>파트너</b>를 골라주세요!
+        </div>
+        
+        <div class="login-container">
+            <div class="login-grid">
+                <!-- 1P -->
+                <div class="player-setup-box">
+                    <div class="player-label">1P (왼쪽 위)</div>
+                    <div class="setup-row">
+                        <select id="p1-class" class="styled-select" onchange="updateNameList(1)"><option value="">반</option></select>
+                        <select id="p1-name" class="styled-select"><option value="">이름</option></select>
+                    </div>
+                    <div class="char-preview-btn" onclick="openCharModal(1)">
+                        <span id="p1-char-name">파트너 선택하기</span>
+                        <input type="hidden" id="p1-char-val" value="char_hero">
+                    </div>
+                </div>
+                <!-- 4P -->
+                <div class="player-setup-box">
+                    <div class="player-label">4P (오른쪽 위)</div>
+                    <div class="setup-row">
+                        <select id="p4-class" class="styled-select" onchange="updateNameList(4)"><option value="">반</option></select>
+                        <select id="p4-name" class="styled-select"><option value="">이름</option></select>
+                    </div>
+                    <div class="char-preview-btn" onclick="openCharModal(4)">
+                        <span id="p4-char-name">파트너 선택하기</span>
+                        <input type="hidden" id="p4-char-val" value="char_sub">
+                    </div>
+                </div>
+                <!-- 2P -->
+                <div class="player-setup-box">
+                    <div class="player-label">2P (왼쪽 아래)</div>
+                    <div class="setup-row">
+                        <select id="p2-class" class="styled-select" onchange="updateNameList(2)"><option value="">반</option></select>
+                        <select id="p2-name" class="styled-select"><option value="">이름</option></select>
+                    </div>
+                    <div class="char-preview-btn" onclick="openCharModal(2)">
+                        <span id="p2-char-name">파트너 선택하기</span>
+                        <input type="hidden" id="p2-char-val" value="char_add">
+                    </div>
+                </div>
+                <!-- 3P -->
+                <div class="player-setup-box">
+                    <div class="player-label">3P (오른쪽 아래)</div>
+                    <div class="setup-row">
+                        <select id="p3-class" class="styled-select" onchange="updateNameList(3)"><option value="">반</option></select>
+                        <select id="p3-name" class="styled-select"><option value="">이름</option></select>
+                    </div>
+                    <div class="char-preview-btn" onclick="openCharModal(3)">
+                        <span id="p3-char-name">파트너 선택하기</span>
+                        <input type="hidden" id="p3-char-val" value="char_hero">
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-footer">
+                <div class="lobby-char-left">
+                    <img src="https://i.imgur.com/EfRD12x.png" class="lobby-char-img" alt="영희">
+                </div>
+                
+                <div class="start-btn-area">
+                    <div id="login-msg" style="color:#d84315; font-weight:bold; height:20px; margin-bottom:5px;"></div>
+                    <button class="btn" onclick="startGame()">모험 시작!</button>
+                </div>
+
+                <div class="lobby-char-right">
+                    <img src="https://i.imgur.com/Sn0UfYs.png" class="lobby-char-img" alt="리오넬">
+                    <img src="https://i.imgur.com/XwJLal1.png" class="lobby-char-img" alt="레모">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 게임 화면 -->
+    <div id="game-screen" class="screen">
+        <div id="p1-box" class="player-box"></div>
+        <div id="p2-box" class="player-box"></div>
+        <div id="p3-box" class="player-box"></div>
+        <div id="p4-box" class="player-box"></div>
+
+        <div id="turn-indicator"><img src="https://i.imgur.com/hoFn8n7.png" alt="turn"></div>
+
+        <div class="problem-area">
+            <div class="problem-text" id="problemDisplay">? + ? = ?</div>
+            <div id="feedback" class="feedback"></div>
+            <input type="number" id="answerInput" readonly placeholder="?">
+            <div class="numpad">
+                <button class="num-btn" onclick="pressKey(7)">7</button>
+                <button class="num-btn" onclick="pressKey(8)">8</button>
+                <button class="num-btn" onclick="pressKey(9)">9</button>
+                <button class="num-btn" onclick="pressKey(4)">4</button>
+                <button class="num-btn" onclick="pressKey(5)">5</button>
+                <button class="num-btn" onclick="pressKey(6)">6</button>
+                <button class="num-btn" onclick="pressKey(1)">1</button>
+                <button class="num-btn" onclick="pressKey(2)">2</button>
+                <button class="num-btn" onclick="pressKey(3)">3</button>
+                <button class="num-btn clear" onclick="pressKey('C')">지움</button>
+                <button class="num-btn" onclick="pressKey(0)">0</button>
+                <button class="num-btn submit" onclick="checkAnswer()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 결과 화면 -->
+    <div id="result-screen" class="screen">
+        <h2 style="color:#00838f; font-size:2em; margin-bottom:10px;">📊 우리 반 웃음 구슬 현황</h2>
+        <div style="color:#546e7a; margin-bottom:20px;">친구들이 모은 웃음 구슬이 반별로 모이고 있어요!</div>
+        
+        <div class="chart-container" id="chart-area"></div>
+
+        <div style="display:flex; gap:15px;">
+            <button class="btn btn-home" onclick="location.reload()">처음으로</button>
+            <button class="btn" onclick="restartGame()">다시 도전!</button>
+        </div>
+    </div>
+</div>
+
+<!-- 캐릭터 선택 모달 -->
+<div id="charModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 id="modalTitle">함께할 파트너를 골라주세요!</h2>
+        <div id="charGrid" class="char-grid">
+            <div class="char-card" onclick="showCharDetail('char_hero')">
+                <img src="https://i.imgur.com/NzaVyBQ.png" alt="영희">
+                <span class="char-name">영희</span>
+            </div>
+            <div class="char-card" onclick="showCharDetail('char_add')">
+                <img src="https://i.imgur.com/R5SHQUr.png" alt="리오넬">
+                <span class="char-name">리오넬</span>
+            </div>
+            <div class="char-card" onclick="showCharDetail('char_sub')">
+                <img src="https://i.imgur.com/LgTx6M2.png" alt="레모">
+                <span class="char-name">레모</span>
+            </div>
+        </div>
+        <div id="charDetail" class="char-detail-view">
+            <div class="char-detail-row">
+                <img id="detailImg" src="" class="char-detail-img">
+                <div id="detailDesc" class="char-desc-box"></div>
+            </div>
+            <div style="display:flex; gap:15px;">
+                <button class="btn btn-gray" onclick="showCharGrid()">뒤로 가기</button>
+                <button class="btn btn-green" onclick="confirmChar()">이 친구랑 하기!</button>
+            </div>
+        </div>
+        <button id="modalCloseBtn" class="btn btn-blue" style="margin-top:20px;" onclick="closeCharModal()">닫기</button>
+    </div>
+</div>
+
+<!-- 도움말/창고 모달 -->
+<div id="helpModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>📖 게임 설명</h2>
+        <div style="text-align:left; padding:10px 20px; font-size:1.3em; line-height:1.7; color:#37474f;">
+            <p>1. 내 차례가 되면 <b>덧셈</b>과 <b>뺄셈</b> 문제를 풀어주세요.</p>
+            <p>2. 정답을 맞히면 <b>'웃음 구슬'</b>을 10개 받아요.</p>
+            <p>3. <b>5초 안에</b> 빨리 풀면 구슬 5개를 더 받아요!</p>
+            <p>4. <b>계속 정답</b>을 맞히면 친구들이 기뻐서 구슬을 더 줘요.</p>
+            <p>5. 문제를 풀어 모은 구슬은 <b>우리 반 점수</b>에 더해져요.</p>
+            <p style="text-align:center; color:#e91e63; font-weight:bold; margin-top:15px;">친구들과 힘을 합쳐 웃음 구슬을 가득 채워보세요!</p>
+        </div>
+        <button class="btn btn-blue" style="margin-top:20px;" onclick="closeHelpModal()">닫기</button>
+    </div>
+</div>
+
+<div id="hofModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>🔮 반짝반짝 웃음 구슬 창고</h2>
+        <div style="margin-bottom:10px; color:#00838f;">지금까지 친구들이 모은 구슬 점수예요!</div>
+        <div id="hofContent">Loading...</div>
+        <button class="btn btn-blue" style="margin-top:20px;" onclick="closeHofModal()">닫기</button>
+    </div>
+</div>
+
+<script>
+    // ★★★★ SCRIPT_URL: 선생님의 앱스 스크립트 배포 URL로 교체 ★★★★
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx--fo_y3yOHGWwcSwqI1_gVxWfMwYgoZpvoq9axbhOPXslMEAhxmZicvxxCfgd5SYC/exec";
+
+    // 명단 데이터 (서버에서 로드됨)
+    let CLASS_DATA = {};
+
+    const CHAR_IMGS = {
+        'char_hero': { 
+            name: "영희",
+            desc: "1970년대에서 온 씩씩한 반장! 집으로 돌아가기 위해 구슬을 모으고 있어. 무슨 일이든 포기하지 않는 멋진 친구야!",
+            default: 'https://i.imgur.com/NzaVyBQ.png', 
+            correct: 'https://i.imgur.com/c0EjrhG.png', 
+            wrong: 'https://i.imgur.com/QYQM7pP.png', 
+            win: 'https://i.imgur.com/RX8ejSt.png', 
+            lose: 'https://i.imgur.com/YFWbXTl.png',
+            lobby: 'https://i.imgur.com/EfRD12x.png'
+        },
+        'char_add': { 
+            name: "리오넬",
+            desc: "상큼한 라임 요정 리오넬! 숫자가 늘어나는 덧셈을 제일 좋아해. 더하기 문제를 풀면 기분이 좋아서 춤을 춘대!",
+            default: 'https://i.imgur.com/R5SHQUr.png', 
+            correct: 'https://i.imgur.com/h54D1ZO.png', 
+            wrong: 'https://i.imgur.com/5KO87ha.png', 
+            win: 'https://i.imgur.com/AhozXb5.png', 
+            lose: 'https://i.imgur.com/Lg7egAL.png',
+            lobby: 'https://i.imgur.com/Sn0UfYs.png'
+        },
+        'char_sub': { 
+            name: "레모",
+            desc: "새콤한 레몬 요정 레모! 숫자를 덜어내는 뺄셈을 좋아해. 복잡한 걸 싫어해서 뺄셈 문제를 풀면 시원하게 웃어줘!",
+            default: 'https://i.imgur.com/LgTx6M2.png', 
+            correct: 'https://i.imgur.com/T4Y1jal.png', 
+            wrong: 'https://i.imgur.com/82grpdm.png', 
+            win: 'https://i.imgur.com/YUIqSVB.png', 
+            lose: 'https://i.imgur.com/9jdZaTG.png',
+            lobby: 'https://i.imgur.com/XwJLal1.png'
+        }
+    };
+
+    let players = [];
+    let currentPlayerIndex = 0;
+    const TOTAL_TIME = 120;
+    let timerInterval;
+    let currentProblem = {};
+    let problemStartTime = 0;
+    let targetPlayerIdForChar = 1;
+    let tempSelectedCharKey = '';
+
+    // 초기화 및 서버 데이터 로드
+    window.onload = async function() {
+        await loadClassData();
+    };
+
+    async function loadClassData() {
+        try {
+            const res = await fetch(SCRIPT_URL + "?action=getNames");
+            const json = await res.json();
+            CLASS_DATA = json;
+            
+            // 모든 플레이어 드롭박스 초기화
+            for(let i=1; i<=4; i++) {
+                initClassDropdown(i);
+            }
+        } catch(e) {
+            console.error("명단 로드 실패", e);
+            document.getElementById('login-msg').textContent = "명단을 불러오지 못했어요. (새로고침 해주세요)";
+        }
+    }
+
+    function initClassDropdown(pid) {
+        const classSelect = document.getElementById(`p${pid}-class`);
+        classSelect.innerHTML = '<option value="">반 선택</option>';
+        Object.keys(CLASS_DATA).sort().forEach(cls => {
+            const opt = document.createElement('option');
+            opt.value = cls;
+            opt.textContent = `${cls}반`;
+            classSelect.appendChild(opt);
+        });
+    }
+
+    function updateNameList(pid) {
+        const classVal = document.getElementById(`p${pid}-class`).value;
+        const nameSelect = document.getElementById(`p${pid}-name`);
+        nameSelect.innerHTML = '<option value="">이름 선택</option>';
+        
+        if (classVal && CLASS_DATA[classVal]) {
+            CLASS_DATA[classVal].forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                nameSelect.appendChild(opt);
+            });
+        }
+    }
+
+    // 인트로
+    function nextPage(pageNum) {
+        document.querySelectorAll('.story-page').forEach(p => p.classList.remove('active'));
+        document.getElementById(`page-${pageNum}`).classList.add('active');
+    }
+    function goToLogin() {
+        document.getElementById('intro-screen').classList.remove('active');
+        document.getElementById('setup-screen').classList.add('active');
+    }
+
+    // 모달
+    function openCharModal(pid) { targetPlayerIdForChar = pid; showCharGrid(); document.getElementById('charModal').style.display = 'flex'; }
+    function closeCharModal() { document.getElementById('charModal').style.display = 'none'; }
+    function openHelpModal() { document.getElementById('helpModal').style.display = 'flex'; }
+    function closeHelpModal() { document.getElementById('helpModal').style.display = 'none'; }
+    
+    async function openHofModal() {
+        document.getElementById('hofModal').style.display = 'flex';
+        const content = document.getElementById('hofContent');
+        content.innerHTML = '불러오는 중...';
+        
+        try {
+            const res = await fetch(SCRIPT_URL + "?action=getRank");
+            const data = await res.json();
+            
+            let html = '<table class="hof-table"><thead><tr><th>반</th><th>총 획득 구슬</th></tr></thead><tbody>';
+            // 반 번호 순서대로 정렬해서 표시
+            Object.keys(data).sort().forEach(cls => {
+                html += `<tr><td>${cls}반</td><td style="color:#d84315; font-weight:bold;">${data[cls]}개</td></tr>`;
+            });
+            html += '</tbody></table>';
+            content.innerHTML = html;
+        } catch(e) {
+            content.innerHTML = '점수를 불러오지 못했어요.';
+        }
+    }
+    function closeHofModal() { document.getElementById('hofModal').style.display = 'none'; }
+
+    function showCharGrid() {
+        document.getElementById('modalTitle').textContent = "함께할 파트너를 골라주세요!";
+        document.getElementById('charGrid').style.display = 'flex';
+        document.getElementById('charDetail').style.display = 'none';
+        document.getElementById('modalCloseBtn').style.display = 'inline-block';
+    }
+    function showCharDetail(charKey) {
+        tempSelectedCharKey = charKey;
+        const data = CHAR_IMGS[charKey];
+        document.getElementById('modalTitle').textContent = "이 친구는 누구일까요?";
+        document.getElementById('charGrid').style.display = 'none';
+        document.getElementById('charDetail').style.display = 'flex';
+        document.getElementById('modalCloseBtn').style.display = 'none';
+        document.getElementById('detailImg').src = data.default;
+        document.getElementById('detailDesc').textContent = data.desc;
+    }
+    function confirmChar() {
+        const charKey = tempSelectedCharKey;
+        const charName = CHAR_IMGS[charKey].name;
+        document.getElementById(`p${targetPlayerIdForChar}-char-val`).value = charKey;
+        const targetSpan = document.getElementById(`p${targetPlayerIdForChar}-char-name`);
+        const img = document.createElement('img');
+        img.src = CHAR_IMGS[charKey].lobby;
+        img.className = "char-thumb-small";
+        targetSpan.innerHTML = "";
+        targetSpan.appendChild(img);
+        targetSpan.append(` ${charName}`);
+        targetSpan.style.color = "#e91e63";
+        targetSpan.style.fontWeight = "bold";
+        closeCharModal();
+    }
+    function getNth(pid) { if(pid==1) return 1; if(pid==4) return 2; if(pid==2) return 3; if(pid==3) return 4; return 1; }
+    function idToBoxId(id) { return `p${id}-box`; }
+
+    // 게임 시작
+    function startGame() {
+        players = [];
+        const ids = [1, 2, 3, 4];
+        let validCount = 0;
+
+        ids.forEach(id => {
+            const cls = document.getElementById(`p${id}-class`).value;
+            const name = document.getElementById(`p${id}-name`).value;
+            const charKey = document.getElementById(`p${id}-char-val`).value;
+
+            if (cls && name) {
+                players.push({
+                    id: id, class: cls, name: name, character: charKey,
+                    score: 0, timeLeft: TOTAL_TIME, active: true,
+                    consecutiveCorrect: 0, state: 'default'
+                });
+                validCount++;
+            }
+        });
+
+        if (validCount < 1) {
+            document.getElementById('login-msg').textContent = "적어도 한 명은 반과 이름을 선택해야 해요!";
+            return;
+        }
+
+        document.getElementById('setup-screen').classList.remove('active');
+        document.getElementById('game-screen').classList.add('active');
+        
+        ids.forEach(id => {
+            const box = document.getElementById(idToBoxId(id));
+            if(box) box.style.display = 'none';
+        });
+        
+        players.forEach(p => {
+            const box = document.getElementById(idToBoxId(p.id));
+            if(box) { box.style.display = 'flex'; updatePlayerBoxUI(p); }
+        });
+
+        currentPlayerIndex = 0;
+        startRound();
+    }
+
+    function startRound() {
+        const activePlayers = players.filter(p => p.active);
+        if (activePlayers.length === 0) { endGame(); return; }
+
+        let loop = 0;
+        while (!players[currentPlayerIndex].active) {
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+            loop++;
+            if(loop > players.length) { endGame(); return; }
+        }
+
+        const currP = players[currentPlayerIndex];
+        moveTurnIndicator(currP.id);
+        
+        document.querySelectorAll('.player-box').forEach(b => b.classList.remove('active'));
+        const activeBox = document.getElementById(idToBoxId(currP.id));
+        if(activeBox) activeBox.classList.add('active');
+
+        currP.state = 'default';
+        updatePlayerBoxUI(currP);
+
+        generateProblem();
+        problemStartTime = Date.now();
+        document.getElementById('answerInput').value = '';
+        document.getElementById('feedback').innerHTML = '';
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (currP.timeLeft > 0) {
+                currP.timeLeft--;
+                updatePlayerBoxUI(currP);
+            } else {
+                currP.active = false;
+                currP.state = 'lose';
+                const timeOutBox = document.getElementById(idToBoxId(currP.id));
+                if(timeOutBox) timeOutBox.classList.add('timeout');
+                updatePlayerBoxUI(currP);
+                clearInterval(timerInterval);
+                document.getElementById('feedback').textContent = "⏰ 시간 끝!";
+                setTimeout(nextTurn, 1500);
+            }
+        }, 1000);
+    }
+
+    function nextTurn() {
+        if(players[currentPlayerIndex] && players[currentPlayerIndex].active) {
+            players[currentPlayerIndex].state = 'default';
+            updatePlayerBoxUI(players[currentPlayerIndex]);
+        }
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+        startRound();
+    }
+
+    function moveTurnIndicator(pid) {
+        const ind = document.getElementById('turn-indicator');
+        const positions = { 1: { top: '25%', left: '25%' }, 2: { top: '75%', left: '25%' }, 3: { top: '75%', left: '75%' }, 4: { top: '25%', left: '75%' } };
+        if(positions[pid]) { ind.style.top = positions[pid].top; ind.style.left = positions[pid].left; }
+    }
+
+    function generateProblem() {
+        const rand = Math.random();
+        let n1, n2, op;
+        if (rand < 0.4) {
+            op = '+'; n1 = Math.floor(Math.random() * 50) + 10; n2 = Math.floor(Math.random() * 8) + 2;   
+            if ((n1 % 10) + n2 >= 10) n2 = 9 - (n1 % 10); if(n2 < 2) n2 = 2; 
+        } else if (rand < 0.7) {
+            op = '-'; n1 = Math.floor(Math.random() * 50) + 10; n2 = Math.floor(Math.random() * 8) + 2;   
+            if ((n1 % 10) < n2) n2 = n1 % 10; if(n2 < 2) n2 = 2; if((n1 % 10) < 2) n1 += 5; 
+        } else {
+            op = Math.random() < 0.5 ? '+' : '-'; n1 = Math.floor(Math.random() * 5 + 1) * 10; n2 = Math.floor(Math.random() * 4 + 1) * 10; 
+            if(n1 === 10) n1 = 20; if(n2 === 10) n2 = 20;
+            if (op === '-' && n1 <= n2) { const temp=n1; n1=n2; n2=temp; if(n1===n2) n1+=10; }
+        }
+        currentProblem = { n1, n2, op, ans: (op==='+' ? n1+n2 : n1-n2) };
+        document.getElementById('problemDisplay').textContent = `${n1} ${op} ${n2} = ?`;
+    }
+
+    function checkAnswer() {
+        const val = document.getElementById('answerInput').value;
+        if (val === '') return;
+        clearInterval(timerInterval);
+        const userAns = parseInt(val);
+        const currP = players[currentPlayerIndex];
+        const fb = document.getElementById('feedback');
+        const timeSpent = (Date.now() - problemStartTime) / 1000;
+        let scoreAdd = 0;
+
+        if (userAns === currentProblem.ans) {
+            scoreAdd = 10;
+            let msg = "⭕ 정답! (+10)";
+            if (timeSpent <= 5) { scoreAdd += 5; msg += " ⚡빠름(+5)"; }
+            if (currP.consecutiveCorrect >= 2) { scoreAdd += 5; msg += " 🔥연속(+5)"; }
+            
+            currP.score += scoreAdd;
+            currP.consecutiveCorrect++;
+            currP.state = 'correct';
+            fb.innerHTML = `<span style="color:#2e7d32">${msg}</span>`;
+        } else {
+            currP.consecutiveCorrect = 0;
+            currP.state = 'wrong';
+            fb.innerHTML = `<span style="color:#c62828; font-size:0.9em;">아까워요! 정답은 ${currentProblem.ans}! 담엔 할 수 있어!</span>`;
+        }
+        updatePlayerBoxUI(currP);
+        setTimeout(nextTurn, 2000); 
+    }
+
+    function updatePlayerBoxUI(p) {
+        const box = document.getElementById(idToBoxId(p.id));
+        if (!box) return;
+        const min = Math.floor(p.timeLeft / 60);
+        const sec = String(p.timeLeft % 60).padStart(2, '0');
+        let imgState = p.state; if (!p.active) imgState = 'lose';
+        const img = CHAR_IMGS[p.character][imgState] || CHAR_IMGS[p.character]['default'];
+        box.innerHTML = `<div class="p-info"><span>${p.class}반</span><span>${min}:${sec}</span></div><div class="p-char-img"><img src="${img}"></div><div style="text-align:center;"><div class="p-name">${p.name}</div><div style="font-weight:bold; color:#ff7043;">${p.score} 구슬</div></div>`;
+    }
+
+    function pressKey(k) { const inp = document.getElementById('answerInput'); if (k === 'C') inp.value = ''; else if (inp.value.length < 3) inp.value += k; }
+    document.addEventListener('keydown', (e) => { if (!document.getElementById('game-screen').classList.contains('active')) return; if (e.key >= '0' && e.key <= '9') pressKey(e.key); else if (e.key === 'Backspace') { const el=document.getElementById('answerInput'); el.value=el.value.slice(0,-1); } else if (e.key === 'Enter') checkAnswer(); });
+    function restartGame() { location.reload(); }
+
+    async function endGame() {
+        document.getElementById('game-screen').classList.remove('active');
+        document.getElementById('result-screen').classList.add('active');
+        players.forEach(p => { p.state = p.score > 0 ? 'win' : 'lose'; });
+
+        // 점수 전송
+        for (const p of players) {
+            if (p.score > 0) {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ className: p.class, name: p.name, score: p.score })
+                });
+            }
+        }
+
+        // 최신 랭킹 로드 및 그래프 표시
+        const res = await fetch(SCRIPT_URL + "?action=getRank");
+        const rankData = await res.json();
+        drawChart(rankData, players);
+    }
+
+    function drawChart(serverScores, currentPlayers) {
+        const container = document.getElementById('chart-area');
+        container.innerHTML = '';
+        
+        const myContrib = { 1:0, 2:0, 3:0, 4:0 };
+        currentPlayers.forEach(p => { if (p.score > 0) myContrib[p.class] += p.score; });
+
+        let maxScore = 0;
+        // 서버 점수에는 이미 이번 판 점수가 반영되어 있을 수도, 아닐 수도 있음 (비동기라)
+        // 화면 효과를 위해 서버 점수(기본) + 내 기여분(애니메이션)으로 구성
+        
+        // 시각적 효과를 위해, 서버에서 받은 점수를 '기본 점수'로 간주하고
+        // 그래프 애니메이션을 그림. (실제로는 서버가 이미 업데이트 되었을 수 있으나 시각적 표현임)
+        const baseScores = serverScores;
+
+        for(let i=1; i<=4; i++) {
+            const total = (baseScores[i] || 0) + myContrib[i]; // 시각적 최대치
+            if(total > maxScore) maxScore = total;
+        }
+        maxScore = Math.max(maxScore, 1000);
+
+        for (let i = 1; i <= 4; i++) {
+            const currentTotal = (baseScores[i] || 0); // 일단 현재 점수
+            const heightPercent = (currentTotal / maxScore) * 85; 
+            
+            const group = document.createElement('div');
+            group.className = 'chart-bar-group';
+
+            const bar = document.createElement('div');
+            bar.className = `bar class-${i}`;
+            bar.style.height = '0%'; 
+
+            const scoreLabel = document.createElement('div');
+            scoreLabel.className = 'score-label';
+            scoreLabel.textContent = currentTotal; 
+
+            // 내가 이번에 기여한 점수가 있다면
+            if (myContrib[i] > 0) {
+                const myPart = document.createElement('div');
+                myPart.className = 'my-contribution';
+                myPart.style.height = '0%';
+                
+                setTimeout(() => {
+                    // 애니메이션으로 쑥 올라감
+                    const addedTotal = currentTotal + myContrib[i]; // 시각적으로 더해줌
+                    const addedHeight = (addedTotal / maxScore) * 85;
+                    bar.style.height = addedHeight + '%';
+                    
+                    scoreLabel.textContent = addedTotal;
+                    scoreLabel.style.color = '#e91e63';
+                    scoreLabel.style.transform = 'scale(1.2)';
+                }, 1000);
+                bar.appendChild(myPart);
+            }
+
+            bar.appendChild(scoreLabel);
+            group.appendChild(bar);
+
+            const label = document.createElement('div');
+            label.className = 'class-label';
+            label.textContent = `${i}반`;
+            group.appendChild(label);
+
+            container.appendChild(group);
+
+            setTimeout(() => { bar.style.height = heightPercent + '%'; }, 100);
+        }
+    }
+</script>
+</body>
+</html>
